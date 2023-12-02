@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json
+include:
+  - project: templates/ci
+    file: default.yml
+
+stages:
+  - build
+  - trigger
+
+variables:
+  ALPINE_VERSION: "3.18"
+
+.build:
+  extends: .docker-build-multi
+  variables:
+    DOCKER_PROXY_HOST: "ghcr.io"
+    PLATFORM: "linux/arm64,linux/amd64"
+    DOCKER_ARGS: >-
+      --build-arg ALPINE_VERSION=${ALPINE_VERSION}
+
+amd64:
+  extends: .docker-build-amd64
+  variables:
+    DOCKER_PROXY_HOST: "ghcr.io"
+    DOCKER_ARGS: >-
+      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
+    HEALTH_CHECK_UUID: 924a29da-5f4d-41ff-9547-1e506ddc7cb2
+
+arm64:
+  extends: .docker-build-arm64
+  variables:
+    DOCKER_PROXY_HOST: "ghcr.io"
+    DOCKER_ARGS: >-
+      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
+    HEALTH_CHECK_UUID: 0141d21d-9e28-41be-9924-798180f50a40
+
+multi:
+  extends: .build
+  needs:
+    - amd64
+    - arm64
+  variables:
+    PLATFORM: "linux/arm64,linux/amd64"
+    DOCKER_HUB: "ENABLED"
+    DOCKER_IMAGE_CACHE_FROM: ${DOCKER_IMAGE_CACHE}
+    DOKCER_IMAGE_CACHE_TO: ${DOCKER_IMAGE_CACHE}
+    DOCKER_ARGS: >-
+      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
+      --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:amd64
+      --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:arm64
+    DOCKER_TAGS: >-
+      --tag=${DOCKER_IMAGE_PATH}:latest
+      --tag=${DOCKER_IMAGE_HUB_PATH}:latest
+    HEALTH_CHECK_UUID: bd7741c6-2147-4e21-8e83-141a60973760
+
+release:
+  extends: .build
+  variables:
+    DOCKER_HUB: "ENABLED"
+    DOCKER_IMAGE: ${DOCKER_IMAGE_PATH}:${CI_COMMIT_TAG}
+    DOCKER_TAGS: >-
+      --tag=${DOCKER_IMAGE_HUB_PATH}:${CI_COMMIT_TAG}
+  only:
+    - tags
+
+alpine-glibc:
+  stage: trigger
+  only:
+    - main
+    - schedules
+  inherit:
+    variables: false
+  variables:
+    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+  trigger:
+    forward:
+      yaml_variables: false
+      pipeline_variables: false
+    project: docker/alpine-glibc
+
+alpine-sdk:
+  stage: trigger
+  only:
+    - main
+    - schedules
+  inherit:
+    variables: false
+  variables:
+    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+  trigger:
+    forward:
+      yaml_variables: false
+      pipeline_variables: false
+    project: docker/alpine-sdk
+
+postgresql:
+  stage: trigger
+  only:
+    - main
+    - schedules
+  inherit:
+    variables: false
+  variables:
+    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+  trigger:
+    forward:
+      yaml_variables: false
+      pipeline_variables: false
+    project: docker/postgresql
+
+redis:
+  stage: trigger
+  only:
+    - main
+    - schedules
+  inherit:
+    variables: false
+  variables:
+    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+  trigger:
+    forward:
+      yaml_variables: false
+      pipeline_variables: false
+    project: docker/redis
