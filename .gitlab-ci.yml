@@ -7,6 +7,33 @@ stages:
   - build
   - trigger
 
+variables:
+  DOCKER_BUILDX_PIPELINE: $CI_PIPELINE_ID
+  TRIGGER_ALPINE_GLIBC:
+    description: Trigger Alpine Glibc
+    value: ENABLED
+    options:
+      - "ENABLED"
+      - "DISABLED"
+  TRIGGER_ALPINE_SDK:
+    description: Trigger Alpine SDK
+    value: ENABLED
+    options:
+      - "ENABLED"
+      - "DISABLED"
+  TRIGGER_POSTGRESQL:
+    description: Trigger PostgreSQL
+    value: ENABLED
+    options:
+      - "ENABLED"
+      - "DISABLED"
+  TRIGGER_REDIS:
+    description: Trigger Redis
+    value: ENABLED
+    options:
+      - "ENABLED"
+      - "DISABLED"
+
 .build:
   extends: .docker-build-multi
   variables:
@@ -56,60 +83,80 @@ release:
 
 alpine-glibc:
   stage: trigger
-  only:
-    - main
-    - schedules
   inherit:
-    variables: false
+    variables:
+      - CI_PIPELINE_SOURCE
+      - CI_REGISTRY
+      - CI_PROJECT_PATH
+      - TRIGGER_ALPINE_GLIBC
+  rules:
+    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
   variables:
-    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   trigger:
     forward:
-      yaml_variables: false
+      yaml_variables: true
       pipeline_variables: false
     project: docker/alpine-glibc
 
 alpine-sdk:
   stage: trigger
-  only:
-    - main
-    - schedules
   inherit:
-    variables: false
+    variables:
+      - CI_PIPELINE_SOURCE
+      - CI_REGISTRY
+      - CI_PROJECT_PATH
+      - TRIGGER_ALPINE_SDK
+  rules:
+    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
   variables:
-    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   trigger:
     forward:
-      yaml_variables: false
+      yaml_variables: true
       pipeline_variables: false
     project: docker/alpine-sdk
 
 postgresql:
   stage: trigger
-  only:
-    - main
-    - schedules
   inherit:
-    variables: false
+    variables:
+      - CI_PIPELINE_SOURCE
+      - CI_REGISTRY
+      - CI_PROJECT_PATH
+      - TRIGGER_POSTGRESQL
+  rules:
+    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
   variables:
-    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   trigger:
     forward:
-      yaml_variables: false
+      yaml_variables: true
       pipeline_variables: false
     project: docker/postgresql
 
 redis:
   stage: trigger
-  only:
-    - main
-    - schedules
   inherit:
-    variables: false
+    variables:
+      - CI_PIPELINE_SOURCE
+      - CI_REGISTRY
+      - CI_PROJECT_PATH
+      - TRIGGER_REDIS
+  rules:
+    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
   variables:
-    DOCKER_IMAGE_BASE: ${DOCKER_IMAGE_CACHE}
+    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   trigger:
     forward:
-      yaml_variables: false
+      yaml_variables: true
       pipeline_variables: false
     project: docker/redis

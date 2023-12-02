@@ -39,7 +39,6 @@ ARG BUILD_DATE
 ARG CI_PROJECT_NAME
 ARG CI_PROJECT_URL
 ARG VCS_REF
-ARG ALPINE_VERSION
 
 LABEL \
     maintainer="G.J.R. Timmer <gjr.timmer@gmail.com>" \
