@@ -24,7 +24,7 @@ amd64:
     DOCKER_PROXY_HOST: "ghcr.io"
     DOCKER_ARGS: >-
       --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
-    HEALTH_CHECK_UUID: 924a29da-5f4d-41ff-9547-1e506ddc7cb2
+    HEALTH_CHECK_UUID: e03807a0-e4e8-46e2-9adb-5d1a4a002472
 
 arm64:
   extends: .docker-build-arm64
@@ -32,7 +32,7 @@ arm64:
     DOCKER_PROXY_HOST: "ghcr.io"
     DOCKER_ARGS: >-
       --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
-    HEALTH_CHECK_UUID: 0141d21d-9e28-41be-9924-798180f50a40
+    HEALTH_CHECK_UUID: 5efa0c37-af01-47f8-acb0-f07d57d0de94
 
 multi:
   extends: .build
@@ -51,7 +51,7 @@ multi:
     DOCKER_TAGS: >-
       --tag=${DOCKER_IMAGE_PATH}:latest
       --tag=${DOCKER_IMAGE_HUB_PATH}:latest
-    HEALTH_CHECK_UUID: bd7741c6-2147-4e21-8e83-141a60973760
+    HEALTH_CHECK_UUID: 546ba68b-e68f-40ce-bbb1-74271ed6e26e
 
 release:
   extends: .build
