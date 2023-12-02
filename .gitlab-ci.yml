@@ -7,31 +7,22 @@ stages:
   - build
   - trigger
 
-variables:
-  ALPINE_VERSION: "3.18"
-
 .build:
   extends: .docker-build-multi
   variables:
     DOCKER_PROXY_HOST: "ghcr.io"
     PLATFORM: "linux/arm64,linux/amd64"
-    DOCKER_ARGS: >-
-      --build-arg ALPINE_VERSION=${ALPINE_VERSION}
 
 amd64:
   extends: .docker-build-amd64
   variables:
     DOCKER_PROXY_HOST: "ghcr.io"
-    DOCKER_ARGS: >-
-      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
     HEALTH_CHECK_UUID: e03807a0-e4e8-46e2-9adb-5d1a4a002472
 
 arm64:
   extends: .docker-build-arm64
   variables:
     DOCKER_PROXY_HOST: "ghcr.io"
-    DOCKER_ARGS: >-
-      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
     HEALTH_CHECK_UUID: 5efa0c37-af01-47f8-acb0-f07d57d0de94
 
 multi:
@@ -45,7 +36,6 @@ multi:
     DOCKER_IMAGE_CACHE_FROM: ${DOCKER_IMAGE_CACHE}
     DOKCER_IMAGE_CACHE_TO: ${DOCKER_IMAGE_CACHE}
     DOCKER_ARGS: >-
-      --build-arg=ALPINE_VERSION=${ALPINE_VERSION}
       --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:amd64
       --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:arm64
     DOCKER_TAGS: >-

@@ -1,6 +1,5 @@
 ARG DOCKER_PROXY
-ARG ALPINE_VERSION
-FROM ${DOCKER_PROXY}/linuxserver/baseimage-alpine:${ALPINE_VERSION}
+FROM ${DOCKER_PROXY}/linuxserver/baseimage-alpine:3.18
 
 RUN apk add --no-cache --force-overwrite --update \
     curl \
@@ -23,7 +22,6 @@ RUN apk add --no-cache --force-overwrite --update \
 FROM scratch as runtime
 COPY --from=0 / /
 
-ARG ALPINE_VERSION
 ENV PATH=/lsiopy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     PS1="$(whoami)@$(hostname):$(pwd)\\$ " \
     HOME=/root \
@@ -32,8 +30,7 @@ ENV PATH=/lsiopy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bi
     S6_VERBOSITY=1 \
     S6_STAGE2_HOOK=/docker-mods \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
-    VIRTUAL_ENV=/lsiopy \
-    ALPINE_VERSION=${ALPINE_VERSION}
+    VIRTUAL_ENV=/lsiopy
 
 WORKDIR "/"
 ENTRYPOINT [ "/init" ]
@@ -55,7 +52,6 @@ LABEL \
     org.opencontainers.image.source="${CI_PROJECT_URL}.git" \
     org.opencontainers.image.ref.name=${VCS_REF} \
     org.opencontainers.image.revision=${VCS_REF} \
-    org.opencontainers.image.base.name="ghcr.io/linuxserver/baseimage-alpine:${ALPINE_VERSION}" \
-    org.opencontainers.image.base.version=${ALPINE_VERSION} \
+    org.opencontainers.image.base.name="ghcr.io/linuxserver/baseimage-alpine:3.18" \
     org.opencontainers.image.licenses=MIT \
     org.opencontainers.image.vendor=timmertech.nl
