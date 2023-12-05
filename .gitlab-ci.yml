@@ -8,7 +8,6 @@ stages:
   - trigger
 
 variables:
-  DOCKER_BUILDX_PIPELINE: $CI_PIPELINE_ID
   TRIGGER_ALPINE_GLIBC:
     description: Trigger Alpine Glibc
     value: ENABLED
