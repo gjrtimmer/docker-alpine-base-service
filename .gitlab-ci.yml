@@ -142,11 +142,10 @@ gitlab-runner:
       - CI_PIPELINE_SOURCE
       - CI_REGISTRY
       - CI_PROJECT_PATH
-      - TRIGGER_GITLAB_RUNNER
   rules:
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
+    - if: $CI_PIPELINE_SOURCE == 'push'
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $CI_PIPELINE_SOURCE == 'web'
   variables:
     UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
   trigger:
