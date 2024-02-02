@@ -26,6 +26,12 @@ variables:
     options:
       - "ENABLED"
       - "DISABLED"
+  TRIGGER_KEEPALIVED:
+    description: Trigger keepalived
+    value: ENABLED
+    options:
+      - "ENABLED"
+      - "DISABLED"
   TRIGGER_POSTGRESQL:
     description: Trigger PostgreSQL
     value: ENABLED
@@ -154,6 +160,26 @@ gitlab-runner:
       yaml_variables: true
       pipeline_variables: false
     project: docker/gitlab-runner
+
+keepalived:
+  stage: trigger
+  inherit:
+    variables:
+      - CI_PIPELINE_SOURCE
+      - CI_REGISTRY
+      - CI_PROJECT_PATH
+      - TRIGGER_KEEPALIVED
+  rules:
+    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
+  variables:
+    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
+  trigger:
+    forward:
+      yaml_variables: true
+      pipeline_variables: false
+    project: docker/keepalived
 
 postgresql:
   stage: trigger
