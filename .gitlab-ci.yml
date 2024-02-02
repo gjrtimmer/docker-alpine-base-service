@@ -14,12 +14,12 @@ variables:
     options:
       - "ENABLED"
       - "DISABLED"
-  TRIGGER_ALPINE_SDK:
-    description: Trigger Alpine SDK
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
+  # TRIGGER_ALPINE_SDK:
+  #   description: Trigger Alpine SDK
+  #   value: ENABLED
+  #   options:
+  #     - "ENABLED"
+  #     - "DISABLED"
   TRIGGER_GITLAB_RUNNER:
     description: Trigger GitLab Runner
     value: ENABLED
@@ -121,25 +121,25 @@ alpine-glibc:
       pipeline_variables: false
     project: docker/alpine-glibc
 
-alpine-sdk:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_ALPINE_SDK
-  rules:
-    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/alpine-sdk
+# alpine-sdk:
+#   stage: trigger
+#   inherit:
+#     variables:
+#       - CI_PIPELINE_SOURCE
+#       - CI_REGISTRY
+#       - CI_PROJECT_PATH
+#       - TRIGGER_ALPINE_SDK
+#   rules:
+#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
+#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
+#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
+#   variables:
+#     UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
+#   trigger:
+#     forward:
+#       yaml_variables: true
+#       pipeline_variables: false
+#     project: docker/alpine-sdk
 
 gitlab-runner:
   stage: trigger
