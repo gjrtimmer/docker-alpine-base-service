@@ -55,6 +55,7 @@ amd64:
   extends: .docker-build-amd64
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
     DOCKER_PROXY_HOST: "ghcr.io"
@@ -64,6 +65,7 @@ arm64:
   extends: .docker-build-arm64
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
     DOCKER_PROXY_HOST: "ghcr.io"
@@ -76,6 +78,7 @@ multi:
     - arm64
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "push"
     - if: $CI_PIPELINE_SOURCE == "schedule"
   variables:
     PLATFORM: "linux/arm64,linux/amd64"
