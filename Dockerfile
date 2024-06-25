@@ -1,5 +1,4 @@
-ARG DOCKER_PROXY
-FROM ${DOCKER_PROXY}/linuxserver/baseimage-alpine:3.18
+FROM linuxserver/baseimage-alpine:3.18
 
 RUN apk add --no-cache --force-overwrite --update \
     curl \
