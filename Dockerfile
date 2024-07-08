@@ -1,4 +1,4 @@
-FROM harbor.local/ghcr.io/linuxserver/baseimage-alpine:latest
+FROM harbor.local/ghcr.io/linuxserver/baseimage-alpine:edge
 
 RUN apk add --no-cache --force-overwrite --update \
     curl \
