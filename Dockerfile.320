@@ -18,7 +18,7 @@ RUN apk add --no-cache --force-overwrite --update \
     update-ca-certificates
 
 # Compress Image
-FROM scratch as runtime
+FROM scratch AS runtime
 COPY --from=0 / /
 
 ENV PATH=/lsiopy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
