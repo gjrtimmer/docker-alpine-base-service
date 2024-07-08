@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-alpine:3.18
+FROM harbor.local/ghcr.io/linuxserver/baseimage-alpine:latest
 
 RUN apk add --no-cache --force-overwrite --update \
     curl \
@@ -50,6 +50,6 @@ LABEL \
     org.opencontainers.image.source="${CI_PROJECT_URL}.git" \
     org.opencontainers.image.ref.name=${VCS_REF} \
     org.opencontainers.image.revision=${VCS_REF} \
-    org.opencontainers.image.base.name="ghcr.io/linuxserver/baseimage-alpine:3.18" \
+    org.opencontainers.image.base.name="ghcr.io/linuxserver/baseimage-alpine:latest" \
     org.opencontainers.image.licenses=MIT \
     org.opencontainers.image.vendor=timmertech.nl
