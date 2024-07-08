@@ -1,225 +1,58 @@
 # yaml-language-server: $schema=https://gitlab.com/gitlab-org/gitlab/-/raw/master/app/assets/javascripts/editor/schema/ci.json
 include:
-  - project: templates/ci
-    file: default.yml
+  - component: $CI_SERVER_FQDN/templates/components/workflow/default@0.1.1
+  - component: $CI_SERVER_FQDN/templates/components/publish/live@0.3.0
 
-stages:
-  - build
-  - trigger
+  # amd64/latest
+  - component: $CI_SERVER_FQDN/templates/components/docker/amd64@1.1.0
+    inputs:
+      healthcheck-uuid: e03807a0-e4e8-46e2-9adb-5d1a4a002472
 
-variables:
-  TRIGGER_ALPINE_GLIBC:
-    description: Trigger Alpine Glibc
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
-  # TRIGGER_ALPINE_SDK:
-  #   description: Trigger Alpine SDK
-  #   value: ENABLED
-  #   options:
-  #     - "ENABLED"
-  #     - "DISABLED"
-  TRIGGER_GITLAB_RUNNER:
-    description: Trigger GitLab Runner
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
-  TRIGGER_KEEPALIVED:
-    description: Trigger keepalived
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
-  TRIGGER_POSTGRESQL:
-    description: Trigger PostgreSQL
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
-  TRIGGER_REDIS:
-    description: Trigger Redis
-    value: ENABLED
-    options:
-      - "ENABLED"
-      - "DISABLED"
+  # arm64/latest
+  - component: $CI_SERVER_FQDN/templates/components/docker/arm64@1.1.0
+    inputs:
+      healthcheck-uuid: 5efa0c37-af01-47f8-acb0-f07d57d0de94
 
-.build:
-  extends: .docker-build-multi
-  variables:
-    DOCKER_PROXY_HOST: "ghcr.io"
-    PLATFORM: "linux/arm64,linux/amd64"
+  # multi/latest
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+    inputs:
+      needs:
+        - docker:amd64
+        - docker:arm64
+      args: >-
+        --cache-from=type=registry,ref=$DOCKER_IMAGE_CACHE_PATH:amd64
+        --cache-from=type=registry,ref=$DOCKER_IMAGE_CACHE_PATH:arm64
+      tags: >-
+        --tag=$DOCKER_IMAGE_PATH:latest
+        --tag=$DOCKER_IMAGE_HUB_PATH:latest
+      healthcheck-uuid: 546ba68b-e68f-40ce-bbb1-74271ed6e26e
 
-amd64:
-  extends: .docker-build-amd64
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-  variables:
-    DOCKER_PROXY_HOST: "ghcr.io"
-    HEALTH_CHECK_UUID: e03807a0-e4e8-46e2-9adb-5d1a4a002472
+  # multi/3.18
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+    inputs:
+      name: "multiarch:3.18"
+      dockerfile: Dockerfile.318
+      cache: false
+      tag: $DOCKER_IMAGE_PATH:3.18
+      tags: >-
+        --tag=$DOCKER_IMAGE_HUB_PATH:3.18
 
-arm64:
-  extends: .docker-build-arm64
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-  variables:
-    DOCKER_PROXY_HOST: "ghcr.io"
-    HEALTH_CHECK_UUID: 5efa0c37-af01-47f8-acb0-f07d57d0de94
+  # multi/3.19
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+    inputs:
+      name: "multiarch:3.19"
+      dockerfile: Dockerfile.319
+      cache: false
+      tag: $DOCKER_IMAGE_PATH:3.19
+      tags: >-
+        --tag=$DOCKER_IMAGE_HUB_PATH:3.19
 
-multi:
-  extends: .build
-  needs:
-    - amd64
-    - arm64
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "push"
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-  variables:
-    PLATFORM: "linux/arm64,linux/amd64"
-    DOCKER_HUB: "ENABLED"
-    DOCKER_IMAGE_CACHE_FROM: ${DOCKER_IMAGE_CACHE}
-    DOKCER_IMAGE_CACHE_TO: ${DOCKER_IMAGE_CACHE}
-    DOCKER_ARGS: >-
-      --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:amd64
-      --cache-from=type=registry,ref=${DOCKER_IMAGE_CACHE_PATH}:arm64
-    DOCKER_TAGS: >-
-      --tag=${DOCKER_IMAGE_PATH}:latest
-      --tag=${DOCKER_IMAGE_HUB_PATH}:latest
-    HEALTH_CHECK_UUID: 546ba68b-e68f-40ce-bbb1-74271ed6e26e
-
-release:
-  extends: .build
-  rules:
-    - if: $CI_COMMIT_TAG
-  variables:
-    DOCKER_HUB: "ENABLED"
-    DOCKER_IMAGE: ${DOCKER_IMAGE_PATH}:${CI_COMMIT_TAG}
-    DOCKER_BUILDX_CACHE_ENABLED: 0
-    DOCKER_TAGS: >-
-      --tag=${DOCKER_IMAGE_HUB_PATH}:${CI_COMMIT_TAG}
-
-alpine-glibc:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_ALPINE_GLIBC
-  rules:
-    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_ALPINE_GLIBC == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/alpine-glibc
-
-# alpine-sdk:
-#   stage: trigger
-#   inherit:
-#     variables:
-#       - CI_PIPELINE_SOURCE
-#       - CI_REGISTRY
-#       - CI_PROJECT_PATH
-#       - TRIGGER_ALPINE_SDK
-#   rules:
-#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-#     - if: $TRIGGER_ALPINE_SDK == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-#   variables:
-#     UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-#   trigger:
-#     forward:
-#       yaml_variables: true
-#       pipeline_variables: false
-#     project: docker/alpine-sdk
-
-gitlab-runner:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_GITLAB_RUNNER
-  rules:
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_GITLAB_RUNNER == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/gitlab-runner
-
-keepalived:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_KEEPALIVED
-  rules:
-    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_KEEPALIVED == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/keepalived
-
-postgresql:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_POSTGRESQL
-  rules:
-    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_POSTGRESQL == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/postgresql
-
-redis:
-  stage: trigger
-  inherit:
-    variables:
-      - CI_PIPELINE_SOURCE
-      - CI_REGISTRY
-      - CI_PROJECT_PATH
-      - TRIGGER_REDIS
-  rules:
-    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'push'
-    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'schedule'
-    - if: $TRIGGER_REDIS == 'ENABLED' && $CI_PIPELINE_SOURCE == 'web'
-  variables:
-    UPSTREAM_IMAGE: ${CI_REGISTRY}/${CI_PROJECT_PATH}
-  trigger:
-    forward:
-      yaml_variables: true
-      pipeline_variables: false
-    project: docker/redis
+  # multi/3.20
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+    inputs:
+      name: "multiarch:3.20"
+      dockerfile: Dockerfile.320
+      cache: false
+      tag: $DOCKER_IMAGE_PATH:3.20
+      tags: >-
+        --tag=$DOCKER_IMAGE_HUB_PATH:3.20
