@@ -4,17 +4,17 @@ include:
   - component: $CI_SERVER_FQDN/templates/components/publish/live@0.3.0
 
   # amd64/latest
-  - component: $CI_SERVER_FQDN/templates/components/docker/amd64@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/amd64@1.1.2
     inputs:
       healthcheck-uuid: e03807a0-e4e8-46e2-9adb-5d1a4a002472
 
   # arm64/latest
-  - component: $CI_SERVER_FQDN/templates/components/docker/arm64@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/arm64@1.1.2
     inputs:
       healthcheck-uuid: 5efa0c37-af01-47f8-acb0-f07d57d0de94
 
   # multi/latest
-  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.2
     inputs:
       needs:
         - docker:amd64
@@ -28,7 +28,7 @@ include:
       healthcheck-uuid: 546ba68b-e68f-40ce-bbb1-74271ed6e26e
 
   # multi/3.18
-  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.2
     inputs:
       name: "multiarch:3.18"
       dockerfile: Dockerfile.318
@@ -38,7 +38,7 @@ include:
         --tag=$DOCKER_IMAGE_HUB_PATH:3.18
 
   # multi/3.19
-  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.2
     inputs:
       name: "multiarch:3.19"
       dockerfile: Dockerfile.319
@@ -48,7 +48,7 @@ include:
         --tag=$DOCKER_IMAGE_HUB_PATH:3.19
 
   # multi/3.20
-  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.0
+  - component: $CI_SERVER_FQDN/templates/components/docker/multi@1.1.2
     inputs:
       name: "multiarch:3.20"
       dockerfile: Dockerfile.320
