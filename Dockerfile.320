@@ -1,5 +1,7 @@
-FROM harbor.local/ghcr.io/linuxserver/baseimage-alpine:3.20
+# hadolint ignore=DL3007
+FROM harbor.local/ghcr.io/linuxserver/baseimage-alpine:3.20 AS builder
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache --force-overwrite --update \
     curl \
     wget \
@@ -21,7 +23,7 @@ RUN mkdir -p /var/run/s6 /run/s6 /run/s6/container_environment
 
 # Compress Image
 FROM scratch AS runtime
-COPY --from=0 / /
+COPY --from=builder / /
 
 ENV PATH=/lsiopy/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     PS1="$(whoami)@$(hostname):$(pwd)\\$ " \
@@ -41,17 +43,15 @@ ARG CI_PROJECT_NAME
 ARG CI_PROJECT_URL
 ARG VCS_REF
 
-LABEL \
-    maintainer="G.J.R. Timmer <gjr.timmer@gmail.com>" \
-    build_version="${BUILD_DATE}" \
-    org.opencontainers.image.authors="G.J.R. Timmer <gjr.timmer@gmail.com>" \
-    org.opencontainers.image.created="${BUILD_DATE}" \
-    org.opencontainers.image.title="${CI_PROJECT_NAME}" \
-    org.opencontainers.image.url="${CI_PROJECT_URL}" \
-    org.opencontainers.image.documentation="${CI_PROJECT_URL}" \
-    org.opencontainers.image.source="${CI_PROJECT_URL}.git" \
-    org.opencontainers.image.ref.name=${VCS_REF} \
-    org.opencontainers.image.revision=${VCS_REF} \
-    org.opencontainers.image.base.name="ghcr.io/linuxserver/baseimage-alpine:3.18" \
-    org.opencontainers.image.licenses=MIT \
-    org.opencontainers.image.vendor=timmertech.nl
+LABEL maintainer="G.J.R. Timmer <gjr.timmer@gmail.com>"
+LABEL org.opencontainers.image.version="${BUILD_DATE}"
+LABEL org.opencontainers.image.authors="G.J.R. Timmer <gjr.timmer@gmail.com>"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.title="${CI_PROJECT_NAME}"
+LABEL org.opencontainers.image.url="${CI_PROJECT_URL}"
+LABEL org.opencontainers.image.documentation="${CI_PROJECT_URL}"
+LABEL org.opencontainers.image.source="${CI_PROJECT_URL}.git"
+LABEL org.opencontainers.image.ref.name=${VCS_REF}
+LABEL org.opencontainers.image.revision=${VCS_REF}
+LABEL org.opencontainers.image.licenses=MIT
+LABEL org.opencontainers.image.vendor=timmertech.nl
